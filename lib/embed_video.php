@@ -143,7 +143,7 @@ function videoembed_add_object($type, $url, $guid, $width, $height) {
 function videoembed_calc_size(&$width, &$height, $aspect_ratio, $toolbar_height) {
 	// set video width and height
 	if (!$width) {
-		$width = elgg_get_plugin_setting('videowidth', 'embedvideo');
+		$width = get_plugin_setting('videowidth', 'embedvideo');
 	}
 
 	// make sure width is a number and greater than zero
@@ -192,7 +192,7 @@ function videoembed_youtube_parse_url($url) {
 
 	// This provides some security against inserting bad content.
 	// Divides url into http://, www or localization, domain name, path.
-	if (!preg_match('/(http:\/\/)([a-zA-Z]{2,3}\.)(youtube\.com\/)(.*)/', $url, $matches)) {
+	if (!preg_match('/(https?:\/\/)([a-zA-Z]{2,3}\.)(youtube\.com\/)(.*)/', $url, $matches)) {
 		//echo "malformed youtube url";
 		return;
 	}
@@ -262,7 +262,7 @@ function videoembed_google_parse_url($url) {
 		return videoembed_google_parse_embed($url);
 	}
 
-	if (!preg_match('/(http:\/\/)(video\.google\.com\/videoplay)(.*)/', $url, $matches)) {
+	if (!preg_match('/(https?:\/\/)(video\.google\.com\/videoplay)(.*)/', $url, $matches)) {
 		//echo "malformed google url";
 		return;
 	}
@@ -290,7 +290,7 @@ function videoembed_google_parse_url($url) {
  */
 function videoembed_google_parse_embed($url) {
 
-	if (!preg_match('/(src=)(http:\/\/video\.google\.com\/googleplayer\.swf\?docid=)([0-9-]*)(&hl=[a-zA-Z]{2})(.*)/', $url, $matches)) {
+	if (!preg_match('/(src=)(https?:\/\/video\.google\.com\/googleplayer\.swf\?docid=)([0-9-]*)(&hl=[a-zA-Z]{2})(.*)/', $url, $matches)) {
 		//echo "malformed embed google url";
 		return;
 	}
@@ -342,7 +342,7 @@ function videoembed_vimeo_parse_url($url) {
 	}
 
 	if (strpos($url, 'groups') != false) {
-		if (!preg_match('/(http:\/\/)(www\.)?(vimeo\.com\/groups)(.*)(\/videos\/)([0-9]*)/', $url, $matches)) {
+		if (!preg_match('/(https?:\/\/)(www\.)?(vimeo\.com\/groups)(.*)(\/videos\/)([0-9]*)/', $url, $matches)) {
 			//echo "malformed vimeo group url";
 			return;
 		}
@@ -369,7 +369,7 @@ function videoembed_vimeo_parse_url($url) {
  * @return string hash
  */
 function videoembed_vimeo_parse_embed($url) {
-	if (!preg_match('/(value="http:\/\/vimeo\.com\/moogaloop\.swf\?clip_id=)([0-9-]*)(&)(.*" \/)/', $url, $matches)) {
+	if (!preg_match('/(value="https?:\/\/vimeo\.com\/moogaloop\.swf\?clip_id=)([0-9-]*)(&)(.*" \/)/', $url, $matches)) {
 		//echo "malformed embed vimeo url";
 		return;
 	}
@@ -416,7 +416,7 @@ function videoembed_metacafe_parse_url($url) {
 		return videoembed_metacafe_parse_embed($url);
 	}
 
-	if (!preg_match('/(http:\/\/)(www\.)?(metacafe\.com\/watch\/)([0-9a-zA-Z_-]*)(\/[0-9a-zA-Z_-]*)(\/)/', $url, $matches)) {
+	if (!preg_match('/(https?:\/\/)(www\.)?(metacafe\.com\/watch\/)([0-9a-zA-Z_-]*)(\/[0-9a-zA-Z_-]*)(\/)/', $url, $matches)) {
 		//echo "malformed metacafe group url";
 		return;
 	}
@@ -435,7 +435,7 @@ function videoembed_metacafe_parse_url($url) {
  * @return string hash
  */
 function videoembed_metacafe_parse_embed($url) {
-	if (!preg_match('/(src="http:\/\/)(www\.)?(metacafe\.com\/fplayer\/)([0-9]*)(\/[0-9a-zA-Z_-]*)(\.swf)/', $url, $matches)) {
+	if (!preg_match('/(src="https?:\/\/)(www\.)?(metacafe\.com\/fplayer\/)([0-9]*)(\/[0-9a-zA-Z_-]*)(\.swf)/', $url, $matches)) {
 		//echo "malformed embed metacafe url";
 		return;
 	}
@@ -501,7 +501,7 @@ function videoembed_veoh_parse_url($url) {
  * @return string hash
  */
 function videoembed_veoh_parse_embed($url) {
-	if (!preg_match('/(src="http:\/\/)(www\.)?(veoh\.com\/static\/swf\/webplayer\/WebPlayer\.swf\?version=)([0-9a-zA-Z.]*)&permalinkId=([a-zA-Z0-9]*)&(.*)/', $url, $matches)) {
+	if (!preg_match('/(src="https?:\/\/)(www\.)?(veoh\.com\/static\/swf\/webplayer\/WebPlayer\.swf\?version=)([0-9a-zA-Z.]*)&permalinkId=([a-zA-Z0-9]*)&(.*)/', $url, $matches)) {
 		//echo "malformed embed veoh url";
 		return;
 	}
@@ -621,7 +621,7 @@ function videoembed_blip_parse_url($url) {
 		return 1;
 	}
 
-	if (!preg_match('/(src="http:\/\/blip\.tv\/play\/)([a-zA-Z0-9%]*)(.*width=")([0-9]*)(.*height=")([0-9]*)/', $url, $matches)) {
+	if (!preg_match('/(src="https?:\/\/blip\.tv\/play\/)([a-zA-Z0-9%]*)(.*width=")([0-9]*)(.*height=")([0-9]*)/', $url, $matches)) {
 		//echo "malformed blip.tv url";
 		return 2;
 	}
@@ -671,7 +671,7 @@ function videoembed_teachertube_parse_url($url) {
 		return videoembed_teachertube_parse_embed($url);;
 	}
 
-	if (!preg_match('/(http:\/\/www\.teachertube\.com\/viewVideo\.php\?video_id=)([0-9]*)&(.*)/', $url, $matches)) {
+	if (!preg_match('/(https?:\/\/www\.teachertube\.com\/viewVideo\.php\?video_id=)([0-9]*)&(.*)/', $url, $matches)) {
 		//echo "malformed teacher tube url";
 		return;
 	}
@@ -690,7 +690,7 @@ function videoembed_teachertube_parse_url($url) {
  * @return string hash
  */
 function videoembed_teachertube_parse_embed($url) {
-	if (!preg_match('/(flashvars="file=http:\/\/www\.teachertube\.com\/embedFLV.php\?pg=video_)([0-9]*)&(.*)/', $url, $matches)) {
+	if (!preg_match('/(flashvars="file=https?:\/\/www\.teachertube\.com\/embedFLV.php\?pg=video_)([0-9]*)&(.*)/', $url, $matches)) {
 		//echo "malformed teacher tube embed code";
 		return;
 	}
@@ -741,7 +741,7 @@ function videoembed_hulu_parse_url($url) {
 		return 1;
 	}
 
-	if (!preg_match('/(value="http:\/\/www\.hulu\.com\/embed\/)([a-zA-Z0-9_-]*)"(.*)/', $url, $matches)) {
+	if (!preg_match('/(value="https?:\/\/www\.hulu\.com\/embed\/)([a-zA-Z0-9_-]*)"(.*)/', $url, $matches)) {
 		//echo "malformed blip.tv url";
 		return 2;
 	}

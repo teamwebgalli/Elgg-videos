@@ -2,7 +2,7 @@
  *	Elgg videos plugin
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli [at] gmail [dot] com
+ *	Mail : info [at] webgalli [dot] com
  *	Web	: http://webgalli.com 
  *	Skype : 'team.webgalli'
  *	@package Elgg-videos

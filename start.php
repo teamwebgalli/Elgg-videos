@@ -1,11 +1,11 @@
 <?php
 /**
- *	Elgg videos plugin
+ * Elgg videos plugin
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli [at] gmail [dot] com
- *	Web	: http://webgalli.com 
- *	Skype : 'team.webgalli'
+ *	Mail : webgalli@gmail.com
+ *	Web	: http://webgalli.com | http://plugingalaxy.com
+ *	Skype : 'team.webgalli' or 'drsanupmoideen'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
@@ -13,7 +13,6 @@
  */
 
 elgg_register_event_handler('init', 'system', 'videos_init');
-
 /**
  * video init
  */
@@ -23,12 +22,12 @@ function videos_init() {
 	// For now we can use the embed video library of Cash. Once that plugin is updated to 1.8
 	// we can use the elgg's manifest file to make the users use that library along with this
 	// and remove the library from this plugin
+	// V1.4 Added support for https in Cash's library
 	elgg_register_library('elgg:videos:embed', elgg_get_plugins_path() . 'videos/lib/embed_video.php');
-	// actions
+	elgg_register_library('elgg:youtube_api', elgg_get_plugins_path() . 'videos/lib/youtube_functions.php');
 	$action_path = "$root/actions/videos";
 	elgg_register_action('videos/save', "$action_path/save.php");
 	elgg_register_action('videos/delete', "$action_path/delete.php");
-	// menus
 	elgg_register_menu_item('site', array(
 		'name' => 'videos',
 		'text' => elgg_echo('videos'),
@@ -36,19 +35,14 @@ function videos_init() {
 	));
 	elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'videos_owner_block_menu');
 	elgg_register_page_handler('videos', 'videos_page_handler');
+	elgg_extend_view('css/elgg', 'videos/css');
 	elgg_register_widget_type('videos', elgg_echo('videos'), elgg_echo('videos:widget:description'));
-	// Register granular notification for this type
 	register_notification_object('object', 'videos', elgg_echo('videos:new'));
-	// Listen to notification events and supply a more useful message
 	elgg_register_plugin_hook_handler('notify:entity:message', 'object', 'videos_notify_message');
-	// Register a URL handler for videos
 	elgg_register_entity_url_handler('object', 'videos', 'video_url');
-	// Register entity type for search
 	elgg_register_entity_type('object', 'videos');
-	// Groups
 	add_group_tool_option('videos', elgg_echo('videos:enablevideos'), true);
 	elgg_extend_view('groups/tool_latest', 'videos/group_module');
-	// Process the views
 	$views = array('output/longtext','output/plaintext');
 	foreach($views as $view){
 		elgg_register_plugin_hook_handler("view", $view, "videos_view_filter", 500);
@@ -59,19 +53,16 @@ function videos_init() {
 */
 function videos_view_filter($hook, $entity_type, $returnvalue, $params){
 	elgg_load_library('elgg:videos:embed');
-	$patterns = array(	'#(((http://)?)|(^./))(((www.)?)|(^./))youtube\.com/watch[?]v=([^\[\]()<.,\s\n\t\r]+)#i',
-						'#(((http://)?)|(^./))(((www.)?)|(^./))youtu\.be/([^\[\]()<.,\s\n\t\r]+)#i',
-						'/(http:\/\/)(www\.)?(vimeo\.com\/groups)(.*)(\/videos\/)([0-9]*)/',
-						'/(http:\/\/)(www\.)?(vimeo.com\/)([0-9]*)/',
-						'/(http:\/\/)(www\.)?(metacafe\.com\/watch\/)([0-9a-zA-Z_-]*)(\/[0-9a-zA-Z_-]*)(\/)/',
-						'/(http:\/\/www\.dailymotion\.com\/.*\/)([0-9a-z]*)/',
+	$patterns = array(	'#(((https?://)?)|(^./))(((www.)?)|(^./))youtube\.com/watch[?]v=([^\[\]()<.,\s\n\t\r]+)#i',
+						'#(((https?://)?)|(^./))(((www.)?)|(^./))youtu\.be/([^\[\]()<.,\s\n\t\r]+)#i',
+						'/(https?:\/\/)(www\.)?(vimeo\.com\/groups)(.*)(\/videos\/)([0-9]*)/',
+						'/(https?:\/\/)(www\.)?(vimeo.com\/)([0-9]*)/',
+						'/(https?:\/\/)(www\.)?(metacafe\.com\/watch\/)([0-9a-zA-Z_-]*)(\/[0-9a-zA-Z_-]*)(\/)/',
+						'/(https?:\/\/www\.dailymotion\.com\/.*\/)([0-9a-z]*)/',
 						);
-	$regexp = "<a\s[^>]*href=(\"??)([^\" >]*?)\\1[^>]*>(.*)<\/a>";
-	$regexp = "<a\s[^>]*href=(\"??)([^\" >]*?)\\1[^>]*>(.*)<\/a>";
-	if(preg_match_all("/$regexp/siU", $returnvalue, $matches, PREG_SET_ORDER)){
-    // $matches[2] = array of link addresses
-    // $matches[3] = array of link text - including HTML code	
-		foreach($matches as $match){
+	$regex = "/<a[\s]+[^>]*?href[\s]?=[\s\"\']+"."(.*?)[\"\']+.*?>"."([^<]+|.*?)?<\/a>/";
+	if(preg_match_all($regex, $returnvalue, $matches, PREG_SET_ORDER)){
+ 		foreach($matches as $match){
 			foreach ($patterns as $pattern){
 				if (preg_match($pattern, $match[2]) > 0){
 					$returnvalue = str_replace($match[0], videoembed_create_embed_object($match[2], uniqid('videos_embed_'), 350), $returnvalue);
@@ -81,7 +72,6 @@ function videos_view_filter($hook, $entity_type, $returnvalue, $params){
 	}
 	return $returnvalue;
 }	
- 
 /**
  * Dispatcher for videos.
  * URLs take the form of
@@ -99,7 +89,6 @@ function videos_page_handler($page) {
 	elgg_load_library('elgg:videos');
 	elgg_push_breadcrumb(elgg_echo('videos'), 'videos/all');
 	elgg_push_context('videos');
-	// old group usernames
 	if (substr_count($page[0], 'group:')) {
 		preg_match('/group\:([0-9]+)/i', $page[0], $matches);
 		$guid = $matches[1];
@@ -107,7 +96,6 @@ function videos_page_handler($page) {
 			videos_url_forwarder($page);
 		}
 	}
-	// user usernames
 	$user = get_user_by_username($page[0]);
 	if ($user) {
 		videos_url_forwarder($page);

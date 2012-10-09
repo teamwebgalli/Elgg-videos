@@ -3,9 +3,9 @@
 * Elgg videos save action
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli [at] gmail [dot] com
- *	Web	: http://webgalli.com
- *	Skype : 'team.webgalli'
+ *	Mail : webgalli@gmail.com
+ *	Web	: http://webgalli.com | http://plugingalaxy.com
+ *	Skype : 'team.webgalli' or 'drsanupmoideen'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
