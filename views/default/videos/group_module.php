@@ -3,9 +3,9 @@
  * List most recent videos on group profile page
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli@gmail.com
- *	Web	: http://webgalli.com | http://plugingalaxy.com
- *	Skype : 'team.webgalli' or 'drsanupmoideen'
+ *	Mail : info [at] webgalli [dot] com
+ *	Web	: http://webgalli.com
+ *	Skype : 'team.webgalli'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
@@ -31,17 +31,15 @@ $options = array(
 	'limit' => 6,
 	'full_view' => false,
 	'pagination' => false,
+	'no_results' => elgg_echo('videos:none'),	
 );
 $content = elgg_list_entities($options);
 elgg_pop_context();
 
-if (!$content) {
-	$content = '<p>' . elgg_echo('videos:none') . '</p>';
-}
-
 $new_link = elgg_view('output/url', array(
 	'href' => "videos/add/$group->guid",
 	'text' => elgg_echo('videos:add'),
+	'is_trusted' => true,	
 ));
 
 echo elgg_view('groups/profile/module', array(

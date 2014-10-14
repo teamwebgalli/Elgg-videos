@@ -3,9 +3,9 @@
  * Elgg videos plugin friends page
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli@gmail.com
- *	Web	: http://webgalli.com | http://plugingalaxy.com
- *	Skype : 'team.webgalli' or 'drsanupmoideen'
+ *	Mail : info [at] webgalli [dot] com
+ *	Web	: http://webgalli.com
+ *	Skype : 'team.webgalli'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
@@ -21,10 +21,15 @@ elgg_register_title_button();
 
 $title = elgg_echo('videos:friends');
 
-$content = list_user_friends_objects($owner->guid, 'videos', 10, false);
-if (!$content) {
-	$content = elgg_echo('videos:none');
-}
+$content = elgg_list_entities_from_relationship(array(
+	'type' => 'object',
+	'subtype' => 'videos',
+	'full_view' => false,
+	'relationship' => 'friend',
+	'relationship_guid' => $owner->guid,
+	'relationship_join_on' => 'container_guid',
+	'no_results' => elgg_echo('videos:none'),
+));
 
 $params = array(
 	'filter_context' => 'friends',

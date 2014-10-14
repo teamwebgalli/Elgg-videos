@@ -3,16 +3,16 @@
  * videos English language file
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli@gmail.com
- *	Web	: http://webgalli.com | http://plugingalaxy.com
- *	Skype : 'team.webgalli' or 'drsanupmoideen'
+ *	Mail : info [at] webgalli [dot] com
+ *	Web	: http://webgalli.com
+ *	Skype : 'team.webgalli'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
  *	Copyright : Team Webgalli 2011-2015
  */
 
-$english = array(
+return array(
 
 	/**
 	 * Menu items and titles
@@ -50,7 +50,16 @@ $english = array(
 	'videos:river:annotate' => 'a comment on this video',
 	'videos:river:item' => 'an item',
 	
-	
+	'videos:notify:summary' => 'New video called %s',
+	'videos:notify:subject' => 'New video: %s',
+	'videos:notify:body' =>
+'%s added a new video: %s
+
+%s
+
+View and comment on the video:
+%s
+',
 	
 	'item:object:videos' => 'Videos',
 
@@ -88,5 +97,3 @@ $english = array(
 	  'embedvideo:unrecognized' => 'Unrecognised video',
 	  'embedvideo:parseerror' => 'Error processing the video',
 );
-
-add_translation('en', $english);

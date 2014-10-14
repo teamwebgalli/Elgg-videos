@@ -3,9 +3,9 @@
  * Elgg videos plugin
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli@gmail.com
- *	Web	: http://webgalli.com | http://plugingalaxy.com
- *	Skype : 'team.webgalli' or 'drsanupmoideen'
+ *	Mail : info [at] webgalli [dot] com
+ *	Web	: http://webgalli.com
+ *	Skype : 'team.webgalli'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
@@ -37,9 +37,12 @@ function videos_init() {
 	elgg_register_page_handler('videos', 'videos_page_handler');
 	elgg_extend_view('css/elgg', 'videos/css');
 	elgg_register_widget_type('videos', elgg_echo('videos'), elgg_echo('videos:widget:description'));
-	register_notification_object('object', 'videos', elgg_echo('videos:new'));
-	elgg_register_plugin_hook_handler('notify:entity:message', 'object', 'videos_notify_message');
-	elgg_register_entity_url_handler('object', 'videos', 'video_url');
+
+	elgg_register_notification_event('object', 'videos', array('create'));
+	elgg_register_plugin_hook_handler('prepare', 'notification:create:object:videos', 'videos_prepare_notification');
+
+	elgg_register_plugin_hook_handler('entity:url', 'object', 'videos_set_url');
+
 	elgg_register_entity_type('object', 'videos');
 	add_group_tool_option('videos', elgg_echo('videos:enablevideos'), true);
 	elgg_extend_view('groups/tool_latest', 'videos/group_module');
@@ -89,17 +92,6 @@ function videos_page_handler($page) {
 	elgg_load_library('elgg:videos');
 	elgg_push_breadcrumb(elgg_echo('videos'), 'videos/all');
 	elgg_push_context('videos');
-	if (substr_count($page[0], 'group:')) {
-		preg_match('/group\:([0-9]+)/i', $page[0], $matches);
-		$guid = $matches[1];
-		if ($entity = get_entity($guid)) {
-			videos_url_forwarder($page);
-		}
-	}
-	$user = get_user_by_username($page[0]);
-	if ($user) {
-		videos_url_forwarder($page);
-	}
 	$pages = dirname(__FILE__) . '/pages/videos';
 	switch ($page[0]) {
 		case "all":
@@ -136,45 +128,15 @@ function videos_page_handler($page) {
 	return true;
 }
 /**
- * Forward to the new style of URLs
- *
- * @param string $page
- */
-function videos_url_forwarder($page) {
-	global $CONFIG;
-	if (!isset($page[1])) {
-		$page[1] = 'items';
-	}
-	switch ($page[1]) {
-		case "read":
-			$url = "{$CONFIG->wwwroot}videos/view/{$page[2]}/{$page[3]}";
-			break;
-		case "inbox":
-			$url = "{$CONFIG->wwwroot}videos/inbox/{$page[0]}";
-			break;
-		case "friends":
-			$url = "{$CONFIG->wwwroot}videos/friends/{$page[0]}";
-			break;
-		case "add":
-			$url = "{$CONFIG->wwwroot}videos/add/{$page[0]}";
-			break;
-		case "items":
-			$url = "{$CONFIG->wwwroot}videos/owner/{$page[0]}";
-			break;
-	}
-	register_error(elgg_echo("changebookmark"));
-	forward($url);
-}
-/**
  * Populates the ->getUrl() method for videoed objects
  * @param ElggEntity $entity The videoed object
  * @return string videoed item URL
  */
-function video_url($entity) {
-	global $CONFIG;
-	$title = $entity->title;
-	$title = elgg_get_friendly_title($title);
-	return $CONFIG->url . "videos/view/" . $entity->getGUID() . "/" . $title;
+function videos_set_url($hook, $type, $url, $params) {
+	$entity = $params['entity'];
+	if (elgg_instanceof($entity, 'object', 'videos')) {
+		return "videos/view/" . $entity->getGUID() . "/" . elgg_get_friendly_title($entity->title);
+	}
 }
 /**
  * Add a menu item to an ownerblock
@@ -201,33 +163,31 @@ function videos_owner_block_menu($hook, $type, $return, $params) {
 
 /**
  * Returns the body of a notification message
- *
- * @param string $hook
- * @param string $entity_type
- * @param string $returnvalue
- * @param array  $params
+ * 
+ * @param string                          $hook         Hook name
+ * @param string                          $type         Hook type
+ * @param Elgg_Notifications_Notification $notification The notification to prepare
+ * @param array                           $params       Hook parameters
+ * @return Elgg_Notifications_Notification
  */
-function videos_notify_message($hook, $entity_type, $returnvalue, $params) {
-	$entity = $params['entity'];
-	$to_entity = $params['to_entity'];
+function videos_prepare_notification($hook, $type, $notification, $params) {
+	$entity = $params['event']->getObject();
+	$owner = $params['event']->getActor();
+	$recipient = $params['recipient'];
+	$language = $params['language'];
 	$method = $params['method'];
-	if (($entity instanceof ElggEntity) && ($entity->getSubtype() == 'videos')) {
-		$descr = $entity->description;
-		$title = $entity->title;
-		global $CONFIG;
-		$url = elgg_get_site_url() . "view/" . $entity->guid;
-		if ($method == 'sms') {
-			$owner = $entity->getOwnerEntity();
-			return $owner->name . ' ' . elgg_echo("videos:via") . ': ' . $url . ' (' . $title . ')';
-		}
-		if ($method == 'email') {
-			$owner = $entity->getOwnerEntity();
-			return $owner->name . ' ' . elgg_echo("videos:via") . ': ' . $title . "\n\n" . $descr . "\n\n" . $entity->getURL();
-		}
-		if ($method == 'web') {
-			$owner = $entity->getOwnerEntity();
-			return $owner->name . ' ' . elgg_echo("videos:via") . ': ' . $title . "\n\n" . $descr . "\n\n" . $entity->getURL();
-		}
-	}
-	return null;
-}
+
+	$descr = $entity->description;
+	$title = $entity->title;
+
+	$notification->subject = elgg_echo('videos:notify:subject', array($title), $language); 
+	$notification->body = elgg_echo('videos:notify:body', array(
+		$owner->name,
+		$title,
+		$descr,
+		$entity->getURL()
+	), $language);
+	$notification->summary = elgg_echo('videos:notify:summary', array($entity->title), $language);
+
+	return $notification;
+} 

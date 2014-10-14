@@ -3,9 +3,9 @@
  * Elgg video view
  *	Author : Sarath C | Team Webgalli
  *	Team Webgalli | Elgg developers and consultants
- *	Mail : webgalli@gmail.com
- *	Web	: http://webgalli.com | http://plugingalaxy.com
- *	Skype : 'team.webgalli' or 'drsanupmoideen'
+ *	Mail : info [at] webgalli [dot] com
+ *	Web	: http://webgalli.com
+ *	Skype : 'team.webgalli'
  *	@package Elgg-videos
  * 	Plugin info : Upload/ Embed videos. Save uploaded videos in youtube and save your bandwidth and server space
  *	Licence : GNU2
@@ -88,9 +88,7 @@ HTML;
 <div class="video elgg-content mts">
 	<?php echo $description; ?>
 	<div style="margin-left:100px;">
-	<?php 
-	echo videoembed_create_embed_object($video_url, $video->getGUID(),500); 
-	?>
+		<?php echo videoembed_create_embed_object($video_url, $video->getGUID(),500); ?>
 	</div>
 </div>
 <?php
@@ -103,20 +101,16 @@ HTML;
 HTML;
 } else {
 	// brief view
-	$excerpt = elgg_get_excerpt($video->description);
-	if ($excerpt) {
-		$excerpt = "$excerpt";
-	}
-	$video_icon = videoembed_create_embed_object($video_url, $video->getGUID(),150); 
+	$video_icon = videoembed_create_embed_object($video_url, $video->getGUID(), 125); 
 
-	$content = "$excerpt";
+	$content = elgg_get_excerpt($video->description);
 
 	$params = array(
 		'entity' => $video,
 		'metadata' => $metadata,
 		'subtitle' => $subtitle,
 		'tags' => $tags,
-		'content' => $content,
+		'content' => elgg_view_image_block($video_icon, $content),
 	);
 	$params = $params + $vars;
 	$body = elgg_view('object/elements/summary', $params);
